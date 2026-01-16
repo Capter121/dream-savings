@@ -1,3 +1,4 @@
+#streamlit run app.py
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
@@ -5,13 +6,17 @@ from datetime import datetime, timedelta
 # --- 1. 页面配置与连接 ---
 st.set_page_config(page_title="云端梦想储蓄罐", page_icon="☁️", layout="wide")
 
-# 尝试连接数据库 (需要安装 st-supabase-connection)
+# 核心修正：先检查 secrets 是否存在，再尝试连接
+if "connections" not in st.secrets:
+    st.error("❌ 无法读取配置文件！请确保 secrets.toml 位于 .streamlit 文件夹中，且格式正确。")
+    st.stop()
+
 try:
     from st_supabase_connection import SupabaseConnection
     conn = st.connection("supabase", type=SupabaseConnection)
 except Exception as e:
-    st.error("请确保已安装 st-supabase-connection 并配置 secrets.toml")
-
+    st.error(f"❌ 数据库连接异常: {e}")
+    st.stop()
 # --- 2. 侧边栏：登录与全局配置 ---
 with st.sidebar:
     st.header("👤 个人云端同步")
