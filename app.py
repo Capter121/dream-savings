@@ -6,16 +6,17 @@ from datetime import datetime, timedelta
 # --- 1. 页面配置与连接 ---
 st.set_page_config(page_title="云端梦想储蓄罐", page_icon="☁️", layout="wide")
 
-# 核心修正：先检查 secrets 是否存在，再尝试连接
-if "connections" not in st.secrets:
-    st.error("❌ 无法读取配置文件！请确保 secrets.toml 位于 .streamlit 文件夹中，且格式正确。")
-    st.stop()
+# 初始化变量
+conn = None
 
+# 云端部署核心：尝试从 st.secrets 读取配置
 try:
     from st_supabase_connection import SupabaseConnection
+    # 在云端，st.connection 会自动寻找后台 Settings 里配置的 Secrets
     conn = st.connection("supabase", type=SupabaseConnection)
 except Exception as e:
-    st.error(f"❌ 数据库连接异常: {e}")
+    st.error(f"❌ 数据库连接失败: {e}")
+    st.info("💡 请检查 Streamlit Cloud 后台的 Secrets 是否已正确配置。")
     st.stop()
 # --- 2. 侧边栏：登录与全局配置 ---
 with st.sidebar:
@@ -129,3 +130,4 @@ else:
 # --- 底部美化 ---
 st.markdown("---")
 st.caption("✨ 数据实时存储于 Supabase 云端 | 支持分布式跨设备访问")
+
